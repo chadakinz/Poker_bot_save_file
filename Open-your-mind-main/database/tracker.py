@@ -1,8 +1,17 @@
+import os
+
 class Tracker:
     def __init__(self, player_name):
         self.player_name = player_name
-        file = f'{player_name}.txt'
-        self.f = open(file, 'a')
+        file = f'./poker_hand_history/{player_name}.txt'
+        if os.path.isfile(file) == True:
+            self.f = open(file, 'a')
+            self.f.write('----------------NEW GAME WITH SAME OPPONENT----------------')
+        else:
+            self.f.write('----------------NEW GAME----------------')
+            self.f = open(file, 'a')
+
+        self.f.write('')
         self.hand_counter = 0
 
 
@@ -52,6 +61,10 @@ class Tracker:
             self.f.write(write)
 
         self.f.close()
+
+if __name__ == '__main__':
+    file = open('./poker_hand_history/test3.txt', 'x')
+
 
 
 
