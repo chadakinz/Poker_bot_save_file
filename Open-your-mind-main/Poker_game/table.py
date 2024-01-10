@@ -3,6 +3,8 @@ import random
 from Poker_bot_desicions.poker_bot import PokerBot
 from Poker_bot_desicions.handRankingspt2 import rating
 from Poker_game.player import Player
+from database import database
+
 class Table:
 
     def __init__(self):
@@ -167,8 +169,12 @@ class Table:
         currentplayer.chips += self.pot_size
         if self.bot.chips <= 0 and end == True:
             print(f'YOU WON, nice job beating poker bot\nYour chips: {self.player.chips}\nPoker bot chips {self.bot.chips}')
+            database.performance_stat_tracker('LOSE')
+
         elif self.player.chips <= 0 and end == True:
             print(f'HAHAHAHAH HOW DID YOU LOSE TO POKER BOT, man you sure suck at poker, i would recommend laying down the cards')
+            database.performance_stat_tracker('WIN')
+
         else:
 
             print(f'Pot Size: {self.pot_size}')
@@ -208,6 +214,8 @@ class Table:
             action = caller.action_all_in()
         else:
             action = caller.action(self.pot_size, self.player.raise_amount, self.game_state, self.board, self.position, All_In = True, Raise = True)
+            if action == 'Raise':
+                action = 'Call'
         if action == 'Fold':
 
             self.winner(all_in_player)

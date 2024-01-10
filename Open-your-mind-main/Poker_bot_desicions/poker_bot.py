@@ -2,6 +2,7 @@
 from Poker_bot_desicions.Equity import equity
 from Poker_bot_desicions.Villain import Villain
 from Poker_bot_desicions.handRankingspt2 import pre_flop_rating
+import time
 class PokerBot:
     def __init__(self, chips):
         self.position = None
@@ -10,9 +11,12 @@ class PokerBot:
         self.chips = chips
         self.positon = None
         self.bigBlind = False
+        self.big_blind_amount = 0
         self.raise_total = 0
     #This mehtod currently only works for a HUNL style game
     def action(self,  pot_size, bet_size, game_state, table, position, Raise = False, All_In = False):
+        start_time = time.time()
+        print(start_time)
         if type(position[0]) == PokerBot:
             player_1 = Villain('Player1')
             player_1.position = 'LP'
@@ -31,20 +35,22 @@ class PokerBot:
 
             equity_against_player = equity(self.cards, player_1.preflop_hand_distribution(), table)
             total_equity *= equity_against_player
+            end_time = time.time()
+            print(end_time)
             #print(f'Bot Equity: {total_equity}')
             #print(f'Pot Odds: {pot_odds}')
 
         #Poker Bot checks its expected value, if positive, then call, if negative, then fold
         # Expected value if check / call
             opponent_equity = 1 - total_equity
-            win = total_equity * (pot_size + bet_size)
+            win = total_equity * (pot_size)
             lose = -((1 - total_equity) * (bet_size))
 
             expected_value = win + lose
 
             # Expected value if we raise
-            win_fold = total_equity * (pot_size + bet_size)
-            win_call = (total_equity ** 2) * (pot_size + bet_size + self.chips)
+            win_fold = total_equity * (pot_size + self.chips)
+            win_call = (total_equity * (1- total_equity)) * (pot_size + self.chips)
             lose_call = -((1 - total_equity) ** 2) * (self.chips)
             expected_value_raise = win_fold + win_call + lose_call
             if All_In == True:
@@ -57,13 +63,15 @@ class PokerBot:
             if expected_value_raise > expected_value and expected_value_raise > 0 and All_In == False:
 
                 closest_raise_amount = {}
-                for i in range(4000):
+                for i in range(int(self.chips)):
                     closest_raise_amount[abs(opponent_equity - (i/pot_size))] = i
 
                 self.raise_amount = closest_raise_amount[min(closest_raise_amount.keys())]
                 if self.raise_amount < bet_size * 2:
                     self.raise_amount = (bet_size * 2) - self.raise_total
+
                 elif bet_size == 0 and self.raise_amount < 50:
+                    #Raising the big blind
                     self.raise_amount = 50
 
                 if self.raise_amount >= self.chips:
